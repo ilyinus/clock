@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f0e7">
+  <title>Учебные часы</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="heading">
+      <span class="eyebrow">Учимся определять время</span>
+      <h1>Часы</h1>
+      <p>Передвигай стрелки или выставь время цифрами.</p>
+    </header>
+    <section class="clock-panel" aria-label="Учебные часы">
+      <svg id="clock-face" class="clock-face" viewBox="0 0 400 400" role="img" aria-label="Циферблат со стрелками">
+        <circle class="face" cx="200" cy="200" r="184" />
+        <g id="minute-marks" aria-hidden="true"></g>
+        <g id="hour-marks" aria-hidden="true"></g>
+        <g id="minute-labels" aria-hidden="true"></g>
+        <g id="hour-labels" aria-hidden="true"></g>
+        <line id="hour-hand" class="hand hour-hand" x1="200" y1="216" x2="200" y2="105" tabindex="0" role="slider" aria-label="Часовая стрелка" aria-valuemin="0" aria-valuemax="359" />
+        <line id="minute-hand" class="hand minute-hand" x1="200" y1="220" x2="200" y2="55" tabindex="0" role="slider" aria-label="Минутная стрелка" aria-valuemin="0" aria-valuemax="359" />
+        <circle class="pin" cx="200" cy="200" r="9" />
+      </svg>
+      <div id="time-controls" class="time-controls">
+        <label for="time-input">Время</label>
+        <div class="time-entry"><input id="time-input" type="text" inputmode="numeric" value="10:10" placeholder="ЧЧ:ММ" aria-describedby="time-message"><button id="set-time" type="button">Выставить</button></div>
+      </div>
+      <p id="time-message" class="status" aria-live="polite">Потяни за любую стрелку.</p>
+    </section>
+    <section class="settings" aria-label="Настройки часов">
+      <fieldset><legend>Подписи часов</legend><div class="choice-row">
+        <label><input type="radio" name="dial-style" value="arabic" checked><span>1 2 3</span></label>
+        <label><input type="radio" name="dial-style" value="roman"><span>I II III</span></label>
+        <label><input type="radio" name="dial-style" value="none"><span>Без чисел</span></label>
+      </div></fieldset>
+      <div class="toggle-row"><label for="show-minutes">Минуты по кругу <small>00, 05 … 55</small></label><input id="show-minutes" type="checkbox"></div>
+      <div class="toggle-row"><label for="sync-mode">Связанные стрелки <small>часовая движется вместе с минутной</small></label><input id="sync-mode" type="checkbox" checked></div>
+      <div class="toggle-row"><label for="show-time">Показывать цифровое время</label><input id="show-time" type="checkbox" checked></div>
+    </section>
+    <footer>Время можно менять мышью, касанием или клавишами ← →.</footer>
+  </main>
+</body>
+</html>
