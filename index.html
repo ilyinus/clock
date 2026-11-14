@@ -38,9 +38,9 @@
         <label><input type="radio" name="dial-style" value="roman"><span>I II III</span></label>
         <label><input type="radio" name="dial-style" value="none"><span>Без чисел</span></label>
       </div></fieldset>
-      <div class="toggle-row"><label for="show-minutes">Минуты по кругу <small>00, 05 … 55</small></label><input id="show-minutes" type="checkbox"></div>
-      <div class="toggle-row"><label for="sync-mode">Связанные стрелки <small>часовая движется вместе с минутной</small></label><input id="sync-mode" type="checkbox" checked></div>
-      <div class="toggle-row"><label for="show-time">Показывать цифровое время</label><input id="show-time" type="checkbox" checked></div>
+      <fieldset class="toggle-row"><legend><label for="show-minutes">Минуты по кругу</label></legend><div class="toggle-content"><small>00, 05 … 55</small><input id="show-minutes" type="checkbox"></div></fieldset>
+      <fieldset class="toggle-row"><legend><label for="sync-mode">Связанные стрелки</label></legend><div class="toggle-content"><small>часовая движется вместе с минутной</small><input id="sync-mode" type="checkbox" checked></div></fieldset>
+      <fieldset class="toggle-row"><legend><label for="show-time">Показывать цифровое время</label></legend><div class="toggle-content"><input id="show-time" type="checkbox" checked></div></fieldset>
     </section>
     <footer>Время можно менять мышью, касанием или клавишами ← →.</footer>
   </main>

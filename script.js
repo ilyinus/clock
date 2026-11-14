@@ -72,17 +72,17 @@ if (typeof document !== 'undefined') {
     elements.hourMarks.replaceChildren(); elements.minuteMarks.replaceChildren(); elements.hourLabels.replaceChildren(); elements.minuteLabels.replaceChildren();
     for (let i = 0; i < 60; i++) {
       const angle = i * 6, major = i % 5 === 0;
-      const from = pointAt(major ? 165 : 172, angle), to = pointAt(181, angle);
+      const from = pointAt(major ? 169 : 172, angle), to = pointAt(181, angle);
       (major ? elements.hourMarks : elements.minuteMarks).append(svgElement('line', { x1: from.x, y1: from.y, x2: to.x, y2: to.y, class: `tick${major ? ' major' : ''}` }));
     }
     const style = clock.state.dialStyle;
     if (style !== 'none') for (let hour = 1; hour <= 12; hour++) {
-      const p = pointAt(142, hour * 30);
+      const p = pointAt(120, hour * 30);
       elements.hourLabels.append(svgElement('text', { x: p.x, y: p.y, class: 'hour-number' }, style === 'roman' ? roman[hour] : String(hour)));
     }
     elements.minuteLabels.hidden = !clock.state.showMinutes;
     if (clock.state.showMinutes) for (let minute = 0; minute < 60; minute += 5) {
-      const p = pointAt(157, minute * 6);
+      const p = pointAt(152, minute * 6);
       elements.minuteLabels.append(svgElement('text', { x: p.x, y: p.y, class: 'minute-number' }, String(minute).padStart(2, '0')));
     }
   }
@@ -98,6 +98,8 @@ if (typeof document !== 'undefined') {
     } else if (clock.state.synchronized) {
       elements.timeInput.value = clock.getDisplayedTime();
       if (message) setStatus(message);
+    } else if (message) {
+      setStatus(message);
     }
   }
   function setStatus(message, error = false) {
