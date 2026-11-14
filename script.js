@@ -66,7 +66,7 @@ if (typeof document !== 'undefined') {
   }
   function pointAt(radius, angle) {
     const rad = angle * Math.PI / 180;
-    return { x: 200 + Math.sin(rad) * radius, y: 200 - Math.cos(rad) * radius };
+    return { x: 220 + Math.sin(rad) * radius, y: 220 - Math.cos(rad) * radius };
   }
   function drawDial() {
     elements.hourMarks.replaceChildren(); elements.minuteMarks.replaceChildren(); elements.hourLabels.replaceChildren(); elements.minuteLabels.replaceChildren();
@@ -77,19 +77,19 @@ if (typeof document !== 'undefined') {
     }
     const style = clock.state.dialStyle;
     if (style !== 'none') for (let hour = 1; hour <= 12; hour++) {
-      const p = pointAt(120, hour * 30);
+      const p = pointAt(132, hour * 30);
       elements.hourLabels.append(svgElement('text', { x: p.x, y: p.y, class: 'hour-number' }, style === 'roman' ? roman[hour] : String(hour)));
     }
     elements.minuteLabels.hidden = !clock.state.showMinutes;
     if (clock.state.showMinutes) for (let minute = 0; minute < 60; minute += 5) {
-      const p = pointAt(152, minute * 6);
+      const p = pointAt(199, minute * 6);
       elements.minuteLabels.append(svgElement('text', { x: p.x, y: p.y, class: 'minute-number' }, String(minute).padStart(2, '0')));
     }
   }
   function render(message) {
     const hourAngle = normalizeAngle(clock.state.hourAngle), minuteAngle = normalizeAngle(clock.state.minuteAngle);
-    elements.hourHand.setAttribute('transform', `rotate(${hourAngle} 200 200)`);
-    elements.minuteHand.setAttribute('transform', `rotate(${minuteAngle} 200 200)`);
+    elements.hourHand.setAttribute('transform', `rotate(${hourAngle} 220 220)`);
+    elements.minuteHand.setAttribute('transform', `rotate(${minuteAngle} 220 220)`);
     elements.hourHand.setAttribute('aria-valuenow', String(Math.round(hourAngle)));
     elements.minuteHand.setAttribute('aria-valuenow', String(Math.round(minuteAngle)));
     if (clock.state.independentPosition) {
@@ -114,8 +114,8 @@ if (typeof document !== 'undefined') {
   }
   function pointerAngle(event) {
     const rect = elements.face.getBoundingClientRect();
-    const x = (event.clientX - rect.left) * (400 / rect.width), y = (event.clientY - rect.top) * (400 / rect.height);
-    return normalizeAngle(Math.atan2(x - 200, 200 - y) * 180 / Math.PI);
+    const x = (event.clientX - rect.left) * (440 / rect.width), y = (event.clientY - rect.top) * (440 / rect.height);
+    return normalizeAngle(Math.atan2(x - 220, 220 - y) * 180 / Math.PI);
   }
   function endDrag() {
     if (!drag) return;
