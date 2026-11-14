@@ -29,3 +29,7 @@
 
 - Проверка без сборки: открыть `index.html` как `file://` и проверить сценарии из спецификации.
 - Проверка вычислений: переходы через 12 в обе стороны, независимое перемещение и ввод границ 00:00/23:59.
+
+## Реализованные интерфейсы
+
+- `createClockModel()` возвращает `{ state, setTime(hours, minutes), rotateHand(kind, pointerAngle, previousPointerAngle), getDisplayedTime(), setSynchronized(enabled) }`.
