@@ -36,11 +36,13 @@ function createClockModel() {
   function setSynchronized(enabled) {
     state.synchronized = Boolean(enabled);
     if (state.synchronized) {
-      const base = state.minuteAngle / 12;
-      state.hourAngle = base + Math.round((state.hourAngle - base) / 360) * 360;
+      const base = normalizeAngle(state.minuteAngle) / 12;
+      state.hourAngle = base + Math.round((state.hourAngle - base) / 30) * 30;
+      state.minuteAngle = state.hourAngle * 12;
       state.independentPosition = false;
     }
   }
+  setTime(10, 10);
   return { state, setTime, rotateHand, getDisplayedTime, setSynchronized };
 }
 
