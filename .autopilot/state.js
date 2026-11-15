@@ -2,7 +2,7 @@ window.STATE =
 {
   "version": 2,
   "slug": "clock-switches",
-  "dir": "2026-11-15-clock-switches--wip",
+  "dir": "2026-11-15-clock-switches",
   "title": "Подписи циферблата и тумблеры настроек",
   "mode": "semi",
   "depth": "normal",
@@ -11,10 +11,10 @@ window.STATE =
   "memoryFile": "AGENTS.md",
   "memoryOwner": "autopilot",
   "skillDir": "/Users/andrei/.agents/skills/autopilot",
-  "baseCommit": null,
+  "baseCommit": "984c9c6",
   "startedAt": "2026-11-15T01:11:55+03:00",
-  "updatedAt": "2026-11-15T01:14:01+03:00",
-  "finishedAt": null,
+  "updatedAt": "2026-11-15T12:49:19+03:00",
+  "finishedAt": "2026-11-15T12:49:19+03:00",
   "stages": [
     {
       "id": "preflight",
@@ -43,26 +43,33 @@ window.STATE =
     },
     {
       "id": "plan",
-      "status": "active",
-      "startedAt": "2026-11-15T01:14:01+03:00"
+      "status": "done",
+      "startedAt": "2026-11-15T01:14:01+03:00",
+      "finishedAt": "2026-11-15T01:14:11+03:00"
     },
     {
       "id": "build",
-      "status": "pending"
+      "status": "done",
+      "startedAt": "2026-11-15T01:14:11+03:00",
+      "finishedAt": "2026-11-15T01:18:49+03:00"
     },
     {
       "id": "review",
-      "status": "pending"
+      "status": "done",
+      "startedAt": "2026-11-15T01:18:49+03:00",
+      "finishedAt": "2026-11-15T01:19:25+03:00"
     },
     {
       "id": "final",
-      "status": "pending"
+      "status": "done",
+      "startedAt": "2026-11-15T01:19:25+03:00",
+      "finishedAt": "2026-11-15T12:49:19+03:00"
     }
   ],
   "requirements": {
     "total": 6,
-    "done": 0,
-    "inTicket": 6,
+    "done": 6,
+    "inTicket": 0,
     "inSpec": 0,
     "placeholder": 0,
     "deferred": 0,
@@ -89,12 +96,26 @@ window.STATE =
       ],
       "review": "нет",
       "model": "обычная",
-      "status": "pending",
+      "status": "done",
       "retries": 0,
-      "repairs": 0
+      "repairs": 2,
+      "startedAt": "2026-11-15T01:14:11+03:00",
+      "repairFindings": [
+        "На 320 px внешние минутные подписи почти касаются обода: минимальный зазор 0.62 SVG px, нужен отчётливо видимый отступ без обрезки",
+        "После ввода 03:45 стрелки смещены относительно оси: SVG центр 220,220, но вращение осталось вокруг прежнего центра"
+      ],
+      "finishedAt": "2026-11-15T01:18:49+03:00",
+      "tests": {
+        "passed": 5,
+        "failed": 0
+      },
+      "commit": "33b3ef8"
     }
   ],
-  "tests": null,
+  "tests": {
+    "passed": 5,
+    "failed": 0
+  },
   "debt": {
     "placeholders": [],
     "assumptions": [],
@@ -108,14 +129,26 @@ window.STATE =
     "items": []
   },
   "concerns": [],
-  "blind": null,
+  "blind": {
+    "checked": 6,
+    "matched": 6,
+    "mismatches": []
+  },
   "beats": [
     "2026-11-15T01:11:55+03:00",
     "2026-11-15T01:12:27+03:00",
     "2026-11-15T01:12:28+03:00",
-    "2026-11-15T01:14:01+03:00"
+    "2026-11-15T01:14:01+03:00",
+    "2026-11-15T01:14:11+03:00",
+    "2026-11-15T01:17:08+03:00",
+    "2026-11-15T01:17:42+03:00",
+    "2026-11-15T01:18:49+03:00",
+    "2026-11-15T01:19:25+03:00",
+    "2026-11-15T12:48:54+03:00",
+    "2026-11-15T12:48:55+03:00",
+    "2026-11-15T12:49:19+03:00"
   ],
-  "rev": 13,
+  "rev": 26,
   "waiting": null,
   "waits": [],
   "log": [
@@ -181,38 +214,114 @@ window.STATE =
       "g": "G3",
       "ok": true,
       "problems": 0
+    },
+    {
+      "t": "2026-11-15T01:14:11+03:00",
+      "k": "stage",
+      "id": "build",
+      "act": "start"
+    },
+    {
+      "t": "2026-11-15T01:14:11+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "start"
+    },
+    {
+      "t": "2026-11-15T01:17:08+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "repair",
+      "note": "На 320 px внешние минутные подписи почти касаются обода: минимальный зазор 0.62 SVG px, нужен отчётливо видимый отступ без обрезки"
+    },
+    {
+      "t": "2026-11-15T01:17:42+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "repair",
+      "note": "После ввода 03:45 стрелки смещены относительно оси: SVG центр 220,220, но вращение осталось вокруг прежнего центра"
+    },
+    {
+      "t": "2026-11-15T01:18:49+03:00",
+      "k": "ticket",
+      "ids": [
+        "01"
+      ],
+      "act": "done",
+      "tests": {
+        "passed": 5,
+        "failed": 0
+      }
+    },
+    {
+      "t": "2026-11-15T01:18:49+03:00",
+      "k": "stage",
+      "id": "review",
+      "act": "start"
+    },
+    {
+      "t": "2026-11-15T01:19:25+03:00",
+      "k": "stage",
+      "id": "final",
+      "act": "start"
+    },
+    {
+      "t": "2026-11-15T12:48:54+03:00",
+      "k": "gate",
+      "g": "G4",
+      "ok": true,
+      "checked": 6,
+      "matched": 6
+    },
+    {
+      "t": "2026-11-15T12:48:55+03:00",
+      "k": "tests",
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "t": "2026-11-15T12:49:19+03:00",
+      "k": "finish",
+      "result": "Минуты снаружи циферблата, крупные часовые подписи и тумблеры настроек; все 6 требований приняты",
+      "problems": 0
     }
   ],
   "reqList": [
     {
       "id": "R22",
       "text": "«Подписи минут вынести за циферблат»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R23",
       "text": "«Увеличить шрифт подписей часов»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R24",
       "text": "«сделать их ближе к делениям на циферблате»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R25",
       "text": "«опции, которые управляются чекбоксами сделать в виде тумблеров как на айфоне»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R26",
       "text": "«Переключалку подписей часов отставить в виде кнопок»",
-      "status": "in-ticket"
+      "status": "done"
     },
     {
       "id": "R27",
       "text": "«Каждая опция на новой строке»",
-      "status": "in-ticket"
+      "status": "done"
     }
   ],
   "gates": {
@@ -233,7 +342,14 @@ window.STATE =
       "ok": true,
       "at": "2026-11-15T01:14:01+03:00",
       "problems": 0
+    },
+    "G4": {
+      "ok": true,
+      "at": "2026-11-15T12:48:54+03:00",
+      "checked": 6,
+      "matched": 6
     }
   },
-  "result": null
+  "result": "Минуты снаружи циферблата, крупные часовые подписи и тумблеры настроек; все 6 требований приняты",
+  "blindRounds": 1
 }
