@@ -33,14 +33,14 @@
       <p id="time-message" class="status" aria-live="polite">Потяни за любую стрелку.</p>
     </section>
     <section class="settings" aria-label="Настройки часов">
-      <fieldset><legend>Подписи часов</legend><div class="choice-row">
+      <div class="setting-row" role="group" aria-labelledby="dial-style-label"><span id="dial-style-label" class="setting-title">Подписи часов:</span><div class="choice-row">
         <label><input type="radio" name="dial-style" value="arabic" checked><span>1 2 3</span></label>
         <label><input type="radio" name="dial-style" value="roman"><span>I II III</span></label>
         <label><input type="radio" name="dial-style" value="none"><span>Без чисел</span></label>
-      </div></fieldset>
-      <fieldset class="toggle-row"><legend><label for="show-minutes">Минуты по кругу</label></legend><div class="toggle-content"><small>00, 05 … 55</small><input id="show-minutes" type="checkbox"></div></fieldset>
-      <fieldset class="toggle-row"><legend><label for="sync-mode">Связанные стрелки</label></legend><div class="toggle-content"><small>часовая движется вместе с минутной</small><input id="sync-mode" type="checkbox" checked></div></fieldset>
-      <fieldset class="toggle-row"><legend><label for="show-time">Показывать цифровое время</label></legend><div class="toggle-content"><input id="show-time" type="checkbox" checked></div></fieldset>
+      </div></div>
+      <div class="setting-row"><label class="setting-title" for="show-minutes">Минуты по кругу:</label><input id="show-minutes" type="checkbox"></div>
+      <div class="setting-row"><label class="setting-title" for="sync-mode">Связанные стрелки:</label><input id="sync-mode" type="checkbox" checked></div>
+      <div class="setting-row"><label class="setting-title" for="show-time">Показывать цифровое время:</label><input id="show-time" type="checkbox" checked></div>
     </section>
     <footer>Время можно менять мышью, касанием или клавишами ← →.</footer>
   </main>

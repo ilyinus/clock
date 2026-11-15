@@ -28,25 +28,19 @@ button { padding: 0 16px; border: 0; border-radius: 12px; color: white; backgrou
 button:hover { background: #c96035; }
 .status { min-height: 1.25em; margin: 10px 0 0; color: #60717b; font-size: .9rem; }
 .status.error { color: #a63329; font-weight: 700; }
-.settings { display: grid; grid-template-columns: minmax(0, 1fr); gap: 9px; width: min(100%, 650px); margin: 17px auto 0; text-align: left; }
-fieldset, .toggle-row { min-width: 0; margin: 0; padding: 10px 15px 13px; border: 1px solid #e4dccd; border-radius: 16px; background: #fffdf8aa; }
-legend { max-width: 100%; padding: 0 5px; font-size: .85rem; font-weight: 800; line-height: 1.25; }
-legend label { cursor: pointer; }
-.settings > fieldset { min-height: 0; }
-.toggle-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 14px; min-height: 0; padding: 12px 15px; }
-.toggle-row legend { grid-column: 1; grid-row: 1; }
-.toggle-content { display: contents; font-size: .9rem; font-weight: 750; }
-.toggle-content input { grid-column: 2; grid-row: 1 / span 2; margin: 0; }
-.choice-row { display: flex; gap: 7px; }
+.settings { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; width: min(100%, 490px); margin: 17px auto 0; padding: 0 12px; text-align: left; }
+.setting-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.setting-title { font-size: .85rem; font-weight: 800; line-height: 1.4; }
+label.setting-title { cursor: pointer; }
+.choice-row { display: flex; flex: 1; min-width: 0; gap: 7px; }
 .choice-row label { position: relative; flex: 1; cursor: pointer; }
 .choice-row input { position: absolute; opacity: 0; }
 .choice-row span { display: block; padding: 9px 5px; border-radius: 10px; background: #f1ede4; text-align: center; font-size: .82rem; font-weight: 700; }
 .choice-row input:checked + span { color: white; background: #36596a; }
 .choice-row input:focus-visible + span { outline: 3px solid #df7546; }
-.toggle-content small { display: block; margin-top: 3px; color: #72818a; font-size: .74rem; font-weight: 500; }
 input[type=checkbox] { appearance: none; width: 48px; height: 28px; flex: 0 0 auto; margin: 0; border: 0; border-radius: 999px; background-color: #aab3b7; background-image: radial-gradient(circle, #fff 0 10px, transparent 10.5px); background-repeat: no-repeat; background-position: 3px center; background-size: 22px 22px; cursor: pointer; transition: background-color .18s ease, background-position .18s ease; }
 input[type=checkbox]:checked { background-color: #34c759; background-position: 23px center; }
 input[type=checkbox]:focus-visible { outline: 3px solid #df7546; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { input[type=checkbox] { transition: none; } }
 footer { margin-top: 16px; color: #77858b; font-size: .82rem; }
-@media (max-width: 540px) { .app { padding-top: 22px; } .clock-panel { padding: 10px 12px 15px; border-radius: 22px; } .settings { gap: 8px; } .clock-face { width: min(100%, 370px); } }
+@media (max-width: 540px) { .app { padding-top: 22px; } .clock-panel { padding: 10px 12px 15px; border-radius: 22px; } .settings { padding: 0; } .setting-row { gap: 8px; } .choice-row { gap: 4px; } .choice-row span { padding: 9px 4px; font-size: .75rem; } .clock-face { width: min(100%, 370px); } }
