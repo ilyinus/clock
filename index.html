@@ -24,6 +24,7 @@
         <g id="hour-labels" aria-hidden="true"></g>
         <line id="hour-hand" class="hand hour-hand" x1="220" y1="236" x2="220" y2="125" tabindex="0" role="slider" aria-label="Часовая стрелка" aria-valuemin="0" aria-valuemax="359" />
         <line id="minute-hand" class="hand minute-hand" x1="220" y1="240" x2="220" y2="75" tabindex="0" role="slider" aria-label="Минутная стрелка" aria-valuemin="0" aria-valuemax="359" />
+        <line id="second-hand" class="second-hand" x1="220" y1="249" x2="220" y2="61" visibility="hidden" aria-hidden="true" />
         <circle class="pin" cx="220" cy="220" r="9" />
       </svg>
       <div id="time-controls" class="time-controls">
@@ -39,6 +40,7 @@
         <label><input type="radio" name="dial-style" value="none"><span>Без чисел</span></label>
       </div></div>
       <div class="setting-row"><label class="setting-title" for="show-minutes">Минуты по кругу:</label><input id="show-minutes" type="checkbox"></div>
+      <div class="setting-row"><label class="setting-title" for="live-time">Живое время:</label><input id="live-time" type="checkbox"></div>
       <div class="setting-row"><label class="setting-title" for="sync-mode">Связанные стрелки:</label><input id="sync-mode" type="checkbox" checked></div>
       <div class="setting-row"><label class="setting-title" for="show-time">Показывать цифровое время:</label><input id="show-time" type="checkbox" checked></div>
     </section>

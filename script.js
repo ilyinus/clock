@@ -6,8 +6,9 @@ function shortestDelta(current, previous) {
 }
 
 function createClockModel() {
-  const state = { hourAngle: 305, minuteAngle: 60, synchronized: true, dialStyle: 'arabic', showMinutes: false, showTime: true, independentPosition: false };
+  const state = { hourAngle: 305, minuteAngle: 60, secondAngle: 0, liveTime: false, synchronized: true, dialStyle: 'arabic', showMinutes: false, showTime: true, independentPosition: false };
   function setTime(hours, minutes) {
+    if (state.liveTime) return;
     if (!Number.isInteger(hours) || hours < 0 || hours > 23 || !Number.isInteger(minutes) || minutes < 0 || minutes > 59) throw new RangeError('Время должно быть от 00:00 до 23:59');
     const total = hours * 60 + minutes;
     state.minuteAngle = total * 6;
@@ -15,6 +16,7 @@ function createClockModel() {
     state.independentPosition = false;
   }
   function rotateHand(kind, pointerAngle, previousPointerAngle) {
+    if (state.liveTime) return 0;
     if (kind !== 'hour' && kind !== 'minute') throw new TypeError('Неизвестная стрелка');
     const delta = shortestDelta(pointerAngle, previousPointerAngle);
     if (kind === 'minute') {
@@ -28,12 +30,17 @@ function createClockModel() {
     return delta;
   }
   function getDisplayedTime() {
+    if (state.liveTime) {
+      const totalSeconds = Math.round(state.minuteAngle * 10);
+      return `${String(Math.floor(totalSeconds / 3600)).padStart(2, '0')}:${String(Math.floor(totalSeconds / 60) % 60).padStart(2, '0')}:${String(totalSeconds % 60).padStart(2, '0')}`;
+    }
     if (!state.synchronized || state.independentPosition) return null;
     const totalMinutes = Math.round(state.minuteAngle / 6);
     const minuteOfDay = ((totalMinutes % 1440) + 1440) % 1440;
     return `${String(Math.floor(minuteOfDay / 60)).padStart(2, '0')}:${String(minuteOfDay % 60).padStart(2, '0')}`;
   }
   function setSynchronized(enabled) {
+    if (state.liveTime) return;
     state.synchronized = Boolean(enabled);
     if (state.synchronized) {
       const base = normalizeAngle(state.minuteAngle) / 12;
@@ -42,8 +49,20 @@ function createClockModel() {
       state.independentPosition = false;
     }
   }
+  function updateLiveTime(now) {
+    if (!state.liveTime) return;
+    const seconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    state.minuteAngle = seconds / 10;
+    state.hourAngle = seconds / 120;
+    state.secondAngle = now.getSeconds() * 6;
+    state.independentPosition = false;
+  }
+  function setLiveTime(enabled, now) {
+    state.liveTime = Boolean(enabled);
+    if (state.liveTime) updateLiveTime(now);
+  }
   setTime(10, 10);
-  return { state, setTime, rotateHand, getDisplayedTime, setSynchronized };
+  return { state, setTime, rotateHand, getDisplayedTime, setSynchronized, setLiveTime, updateLiveTime };
 }
 
 if (typeof module !== 'undefined' && module.exports) module.exports = { createClockModel, normalizeAngle, shortestDelta };
@@ -52,11 +71,12 @@ if (typeof document !== 'undefined') {
   const clock = createClockModel();
   const svgNS = 'http://www.w3.org/2000/svg';
   const elements = {
-    face: document.getElementById('clock-face'), hourHand: document.getElementById('hour-hand'), minuteHand: document.getElementById('minute-hand'),
+    face: document.getElementById('clock-face'), hourHand: document.getElementById('hour-hand'), minuteHand: document.getElementById('minute-hand'), secondHand: document.getElementById('second-hand'), liveTime: document.getElementById('live-time'),
     hourMarks: document.getElementById('hour-marks'), minuteMarks: document.getElementById('minute-marks'), hourLabels: document.getElementById('hour-labels'), minuteLabels: document.getElementById('minute-labels'),
     timeControls: document.getElementById('time-controls'), timeInput: document.getElementById('time-input'), timeMessage: document.getElementById('time-message'), setTime: document.getElementById('set-time'), showTime: document.getElementById('show-time'), showMinutes: document.getElementById('show-minutes'), syncMode: document.getElementById('sync-mode')
   };
   let drag = null;
+  let liveTimer = null;
   const roman = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
   function svgElement(tag, attrs, text) {
     const node = document.createElementNS(svgNS, tag);
@@ -90,9 +110,21 @@ if (typeof document !== 'undefined') {
     const hourAngle = normalizeAngle(clock.state.hourAngle), minuteAngle = normalizeAngle(clock.state.minuteAngle);
     elements.hourHand.setAttribute('transform', `rotate(${hourAngle} 220 220)`);
     elements.minuteHand.setAttribute('transform', `rotate(${minuteAngle} 220 220)`);
+    elements.secondHand.setAttribute('visibility', clock.state.liveTime ? 'visible' : 'hidden');
+    elements.secondHand.setAttribute('transform', `rotate(${clock.state.secondAngle} 220 220)`);
+    for (const hand of [elements.hourHand, elements.minuteHand]) {
+      hand.setAttribute('aria-disabled', String(clock.state.liveTime));
+      hand.setAttribute('tabindex', clock.state.liveTime ? '-1' : '0');
+    }
+    elements.timeInput.readOnly = clock.state.liveTime;
+    elements.setTime.disabled = clock.state.liveTime;
+    elements.syncMode.disabled = clock.state.liveTime;
     elements.hourHand.setAttribute('aria-valuenow', String(Math.round(hourAngle)));
     elements.minuteHand.setAttribute('aria-valuenow', String(Math.round(minuteAngle)));
-    if (clock.state.independentPosition) {
+    if (clock.state.liveTime) {
+      elements.timeInput.value = clock.getDisplayedTime();
+      if (message) setStatus(message);
+    } else if (clock.state.independentPosition) {
       elements.timeInput.value = '';
       setStatus('Стрелки установлены независимо. Выставь время цифрами, чтобы связать их.');
     } else if (clock.state.synchronized) {
@@ -107,6 +139,7 @@ if (typeof document !== 'undefined') {
     elements.timeMessage.classList.toggle('error', error);
   }
   function applyTime() {
+    if (clock.state.liveTime) return;
     const match = /^(\d{2}):(\d{2})$/.exec(elements.timeInput.value.trim());
     if (!match || Number(match[1]) > 23 || Number(match[2]) > 59) { setStatus('Введи время от 00:00 до 23:59 в формате ЧЧ:ММ.', true); return; }
     clock.setTime(Number(match[1]), Number(match[2]));
@@ -126,6 +159,7 @@ if (typeof document !== 'undefined') {
   }
   for (const [kind, hand] of [['hour', elements.hourHand], ['minute', elements.minuteHand]]) {
     hand.addEventListener('pointerdown', event => {
+      if (clock.state.liveTime) return;
       event.preventDefault(); hand.setPointerCapture(event.pointerId); hand.classList.add('dragging'); drag = { kind, hand, pointerId: event.pointerId, angle: pointerAngle(event) };
     });
     hand.addEventListener('pointermove', event => {
@@ -137,6 +171,7 @@ if (typeof document !== 'undefined') {
     hand.addEventListener('pointercancel', endDrag);
     hand.addEventListener('lostpointercapture', endDrag);
     hand.addEventListener('keydown', event => {
+      if (clock.state.liveTime) return;
       if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
       event.preventDefault(); const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : -1;
       const delta = (event.shiftKey ? 6 : 1) * direction;
@@ -144,6 +179,23 @@ if (typeof document !== 'undefined') {
     });
   }
   elements.setTime.addEventListener('click', applyTime);
+  function updateLiveTime() {
+    clearTimeout(liveTimer);
+    if (!clock.state.liveTime) return;
+    const now = new Date();
+    clock.updateLiveTime(now);
+    render();
+    liveTimer = setTimeout(updateLiveTime, 1000 - now.getMilliseconds());
+  }
+  elements.liveTime.addEventListener('change', () => {
+    endDrag();
+    clearTimeout(liveTimer);
+    clock.setLiveTime(elements.liveTime.checked, new Date());
+    if (clock.state.liveTime) updateLiveTime();
+    else if (!clock.state.synchronized) elements.timeInput.value = '';
+    render(clock.state.liveTime ? 'Показывается местное время устройства.' : 'Живое время выключено. Стрелки можно двигать.');
+  });
+  document.addEventListener('visibilitychange', updateLiveTime);
   elements.timeInput.addEventListener('keydown', event => { if (event.key === 'Enter') applyTime(); });
   elements.showTime.addEventListener('change', () => { clock.state.showTime = elements.showTime.checked; elements.timeControls.hidden = !clock.state.showTime; });
   elements.showMinutes.addEventListener('change', () => { clock.state.showMinutes = elements.showMinutes.checked; drawDial(); });
