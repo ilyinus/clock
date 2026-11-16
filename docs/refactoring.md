@@ -21,7 +21,7 @@
 | Запуск и геометрия | `startClock()`, константы в его начале |
 | Деления и подписи циферблата | `drawDial()`, `drawMarks()`, `drawHourLabels()`, `drawMinuteLabels()` |
 | Отображение и доступность управления | `render()`, `renderHands()`, `renderManualControls()`, `renderTimeInput()`, `setStatus()` |
-| Перетаскивание и клавиатура | `bindHandEvents()`, `pointerAngle()`, `endDrag()` |
+| Перетаскивание стрелок | `bindHandEvents()`, `pointerAngle()`, `endDrag()` |
 | Применение времени и события поля | `applyTime()`, `handleTimeInput()`, `bindTimeInputEvents()` |
 | Таймер и переключение живого времени | `updateLiveTime()` и `changeLiveTime()` внутри `startClock()` |
 | Настройки и подключение обработчиков | `change…()` и `bindSettingsEvents()` в конце `startClock()` |

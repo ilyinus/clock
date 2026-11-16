@@ -102,15 +102,10 @@ h1 {
 .hand {
   cursor: grab;
   stroke-linecap: round;
-  outline: none;
 }
 
 .hand:active, .hand.dragging {
   cursor: grabbing;
-}
-
-.hand:focus-visible {
-  filter: drop-shadow(0 0 5px #e98752);
 }
 
 .hour-hand {
@@ -347,12 +342,6 @@ input[type=checkbox]:focus-visible {
   input[type=checkbox] {
     transition: none;
   }
-}
-
-footer {
-  margin-top: 16px;
-  color: #77858b;
-  font-size: .82rem;
 }
 
 @media (max-width: 540px) {

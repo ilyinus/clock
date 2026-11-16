@@ -292,14 +292,11 @@ function startClock() {
     elements.minuteHand.setAttribute('transform', `rotate(${minuteAngle} ${DIAL_CENTER} ${DIAL_CENTER})`);
     elements.secondHand.setAttribute('transform', `rotate(${clock.state.secondAngle} ${DIAL_CENTER} ${DIAL_CENTER})`);
     elements.secondHand.setAttribute('visibility', clock.state.liveTime ? 'visible' : 'hidden');
-    elements.hourHand.setAttribute('aria-valuenow', String(Math.round(hourAngle)));
-    elements.minuteHand.setAttribute('aria-valuenow', String(Math.round(minuteAngle)));
   }
 
   function renderManualControls() {
     for (const hand of [elements.hourHand, elements.minuteHand]) {
       hand.setAttribute('aria-disabled', String(clock.state.liveTime));
-      hand.setAttribute('tabindex', clock.state.liveTime ? '-1' : '0');
     }
     elements.timeInput.readOnly = clock.state.liveTime;
     elements.setTime.disabled = clock.state.liveTime;
@@ -335,7 +332,7 @@ function startClock() {
     elements.timeMessage.classList.toggle('error', error);
   }
 
-  // Перетаскивание и клавиатурное управление стрелками.
+  // Перетаскивание стрелок.
   function pointerAngle(event) {
     const rect = elements.face.getBoundingClientRect();
     // Переводим координаты указателя из экранных пикселей в координаты SVG.
@@ -374,22 +371,11 @@ function startClock() {
       render();
     }
 
-    function handleHandKey(event) {
-      if (clock.state.liveTime) return;
-      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
-      event.preventDefault();
-      const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : -1;
-      const delta = (event.shiftKey ? 6 : 1) * direction;
-      clock.rotateHand(kind, delta, 0);
-      render();
-    }
-
     hand.addEventListener('pointerdown', startDrag);
     hand.addEventListener('pointermove', moveDrag);
     hand.addEventListener('pointerup', endDrag);
     hand.addEventListener('pointercancel', endDrag);
     hand.addEventListener('lostpointercapture', endDrag);
-    hand.addEventListener('keydown', handleHandKey);
   }
 
   // Ручной ввод времени и маска ЧЧ:ММ.
