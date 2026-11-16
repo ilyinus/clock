@@ -149,8 +149,10 @@ function formatTimeEdit(value, caret, beforeEdit, inputType) {
   }
 
   const allDigits = raw.replace(/\D/g, '');
-  // Пятую цифру отклоняем целиком, чтобы вставка в середину не вытеснила минуты.
-  if (allDigits.length > 4 && beforeEdit) {
+  // Проверяем весь результат редактирования, включая замену и вставку.
+  // У часов первая цифра 0–2, после 2 допустимы только 0–3; у минут — 0–5.
+  const validPrefix = /^[0-2]?$|^(?:[01][0-9]|2[0-3])(?:[0-5][0-9]?)?$/.test(allDigits);
+  if ((!validPrefix || /[^0-9:]/.test(raw)) && beforeEdit) {
     return {
       value: beforeEdit.value,
       start: beforeEdit.start,
@@ -159,7 +161,7 @@ function formatTimeEdit(value, caret, beforeEdit, inputType) {
     };
   }
 
-  const digits = allDigits.slice(0, 4);
+  const digits = validPrefix ? allDigits : '';
   const formatted = digits.length < 2 ? digits : `${digits.slice(0, 2)}:${digits.slice(2)}`;
   // Считаем цифры перед курсором: добавленное двоеточие сдвигает его на один знак.
   const digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
@@ -197,8 +199,6 @@ function startClock() {
     minuteLabels: document.getElementById('minute-labels'),
     timeControls: document.getElementById('time-controls'),
     timeInput: document.getElementById('time-input'),
-    timeMessage: document.getElementById('time-message'),
-    setTime: document.getElementById('set-time'),
     showTime: document.getElementById('show-time'),
     showMinutes: document.getElementById('show-minutes'),
     syncMode: document.getElementById('sync-mode')
@@ -299,37 +299,23 @@ function startClock() {
       hand.setAttribute('aria-disabled', String(clock.state.liveTime));
     }
     elements.timeInput.readOnly = clock.state.liveTime;
-    elements.setTime.disabled = clock.state.liveTime;
     elements.syncMode.disabled = clock.state.liveTime;
   }
 
-  function renderTimeInput(message) {
+  function renderTimeInput() {
     // Живое время отображается даже при выключенной связи. При независимом
     // положении поле очищается; при выключенной связи введённый текст сохраняется.
-    if (clock.state.liveTime) {
-      elements.timeInput.value = clock.getDisplayedTime();
-      if (message) setStatus(message);
+    if (clock.state.liveTime || clock.state.synchronized) {
+      elements.timeInput.value = clock.getDisplayedTime() || '';
     } else if (clock.state.independentPosition) {
       elements.timeInput.value = '';
-      setStatus('Стрелки установлены независимо. Выставь время цифрами, чтобы связать их.');
-    } else if (clock.state.synchronized) {
-      elements.timeInput.value = clock.getDisplayedTime();
-      if (message) setStatus(message);
-    } else if (message) {
-      setStatus(message);
     }
   }
 
-  function render(message) {
-    elements.timeInput.removeAttribute('aria-invalid');
+  function render() {
     renderHands();
     renderManualControls();
-    renderTimeInput(message);
-  }
-
-  function setStatus(message, error = false) {
-    elements.timeMessage.textContent = message;
-    elements.timeMessage.classList.toggle('error', error);
+    renderTimeInput();
   }
 
   // Перетаскивание стрелок.
@@ -381,15 +367,11 @@ function startClock() {
   // Ручной ввод времени и маска ЧЧ:ММ.
   function applyTime() {
     if (clock.state.liveTime) return;
-    const match = /^(\d{2}):(\d{2})$/.exec(elements.timeInput.value.trim());
-    if (!match || Number(match[1]) > 23 || Number(match[2]) > 59) {
-      elements.timeInput.setAttribute('aria-invalid', 'true');
-      setStatus('Введи время от 00:00 до 23:59 в формате ЧЧ:ММ.', true);
-      elements.timeInput.focus();
-      return;
-    }
+    const match = /^([01][0-9]|2[0-3]):([0-5][0-9])$/.exec(elements.timeInput.value.trim());
+    if (!match) return;
     clock.setTime(Number(match[1]), Number(match[2]));
-    render('Время выставлено.');
+    // Не перезаписываем поле: при редактировании нужно сохранить курсор и выделение.
+    renderHands();
   }
 
   function rememberTimeEdit() {
@@ -407,10 +389,7 @@ function startClock() {
     beforeEdit = null;
     if (edit.rejected) return;
 
-    if (input.hasAttribute('aria-invalid')) {
-      input.removeAttribute('aria-invalid');
-      setStatus('Введи время и нажми «Выставить».');
-    }
+    applyTime();
   }
 
   function finishTimeComposition() {
@@ -418,16 +397,10 @@ function startClock() {
     elements.timeInput.dispatchEvent(new Event('input'));
   }
 
-  function handleTimeKey(event) {
-    if (event.key === 'Enter') applyTime();
-  }
-
   function bindTimeInputEvents() {
-    elements.setTime.addEventListener('click', applyTime);
     elements.timeInput.addEventListener('beforeinput', rememberTimeEdit);
     elements.timeInput.addEventListener('input', handleTimeInput);
     elements.timeInput.addEventListener('compositionend', finishTimeComposition);
-    elements.timeInput.addEventListener('keydown', handleTimeKey);
   }
 
   // Живое время: источник истины — часы устройства, а не число срабатываний таймера.
@@ -450,10 +423,7 @@ function startClock() {
     } else if (!clock.state.synchronized) {
       elements.timeInput.value = '';
     }
-    const message = clock.state.liveTime
-      ? 'Показывается местное время устройства.'
-      : 'Живое время выключено. Стрелки можно двигать.';
-    render(message);
+    render();
   }
 
   // Настройки и запуск интерфейса.
@@ -469,7 +439,7 @@ function startClock() {
 
   function changeSynchronization() {
     clock.setSynchronized(elements.syncMode.checked);
-    render(elements.syncMode.checked ? 'Стрелки снова связаны.' : 'Стрелки можно двигать независимо.');
+    render();
   }
 
   function changeDialStyle(event) {
@@ -495,7 +465,7 @@ function startClock() {
   bindTimeInputEvents();
   bindSettingsEvents();
   drawDial();
-  render('Потяни за любую стрелку.');
+  render();
 }
 
 if (typeof document !== 'undefined') {
