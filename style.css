@@ -28,6 +28,8 @@ input[readonly] { background: #f1ede4; }
 .time-controls label { display: block; margin-bottom: 6px; font-weight: 750; }
 .time-entry { display: flex; gap: 8px; }
 input[type=text] { min-width: 0; flex: 1; padding: 11px 13px; border: 1.5px solid #cbd4d6; border-radius: 12px; color: #203447; background: white; font: inherit; font-size: 1.1rem; letter-spacing: .08em; }
+input[aria-invalid=true] { border-color: #a63329; }
+.time-hint { display: block; margin-top: 6px; color: #60717b; font-size: .8rem; }
 button { padding: 0 16px; border: 0; border-radius: 12px; color: white; background: #df7546; font: inherit; font-weight: 750; cursor: pointer; }
 button:hover { background: #c96035; }
 .status { min-height: 1.25em; margin: 10px 0 0; color: #60717b; font-size: .9rem; }

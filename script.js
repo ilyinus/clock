@@ -107,6 +107,7 @@ if (typeof document !== 'undefined') {
     }
   }
   function render(message) {
+    elements.timeInput.removeAttribute('aria-invalid');
     const hourAngle = normalizeAngle(clock.state.hourAngle), minuteAngle = normalizeAngle(clock.state.minuteAngle);
     elements.hourHand.setAttribute('transform', `rotate(${hourAngle} 220 220)`);
     elements.minuteHand.setAttribute('transform', `rotate(${minuteAngle} 220 220)`);
@@ -141,7 +142,12 @@ if (typeof document !== 'undefined') {
   function applyTime() {
     if (clock.state.liveTime) return;
     const match = /^(\d{2}):(\d{2})$/.exec(elements.timeInput.value.trim());
-    if (!match || Number(match[1]) > 23 || Number(match[2]) > 59) { setStatus('Введи время от 00:00 до 23:59 в формате ЧЧ:ММ.', true); return; }
+    if (!match || Number(match[1]) > 23 || Number(match[2]) > 59) {
+      elements.timeInput.setAttribute('aria-invalid', 'true');
+      setStatus('Введи время от 00:00 до 23:59 в формате ЧЧ:ММ.', true);
+      elements.timeInput.focus();
+      return;
+    }
     clock.setTime(Number(match[1]), Number(match[2]));
     render('Время выставлено.');
   }
@@ -196,6 +202,47 @@ if (typeof document !== 'undefined') {
     render(clock.state.liveTime ? 'Показывается местное время устройства.' : 'Живое время выключено. Стрелки можно двигать.');
   });
   document.addEventListener('visibilitychange', updateLiveTime);
+  const timeInput = elements.timeInput;
+  let beforeEdit = null;
+  timeInput.addEventListener('beforeinput', () => {
+    beforeEdit = { value: timeInput.value, start: timeInput.selectionStart, end: timeInput.selectionEnd };
+  });
+  timeInput.addEventListener('input', event => {
+    if (timeInput.readOnly || event.isComposing) return;
+    let raw = timeInput.value;
+    let caret = timeInput.selectionStart;
+    // Deleting the separator also deletes its neighbouring digit, so it never traps the caret.
+    if (beforeEdit && beforeEdit.start === beforeEdit.end &&
+        raw === beforeEdit.value.replace(':', '') && beforeEdit.value.includes(':')) {
+      if (event.inputType === 'deleteContentBackward' && beforeEdit.start === 3) {
+        raw = raw.slice(0, 1) + raw.slice(2);
+        caret = 1;
+      } else if (event.inputType === 'deleteContentForward' && beforeEdit.start === 2) {
+        raw = raw.slice(0, 2) + raw.slice(3);
+        caret = 2;
+      }
+    }
+    const allDigits = raw.replace(/\D/g, '');
+    // Ignore excess input rather than dropping an existing minute digit.
+    if (allDigits.length > 4 && beforeEdit) {
+      timeInput.value = beforeEdit.value;
+      timeInput.setSelectionRange(beforeEdit.start, beforeEdit.end);
+      beforeEdit = null;
+      return;
+    }
+    const digits = allDigits.slice(0, 4);
+    const digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
+    const formatted = digits.length < 2 ? digits : `${digits.slice(0, 2)}:${digits.slice(2)}`;
+    if (timeInput.value !== formatted) timeInput.value = formatted;
+    const position = Math.min(formatted.length, digitsBeforeCaret + (digitsBeforeCaret >= 2 ? 1 : 0));
+    timeInput.setSelectionRange(position, position);
+    beforeEdit = null;
+    if (timeInput.hasAttribute('aria-invalid')) {
+      timeInput.removeAttribute('aria-invalid');
+      setStatus('Введи время и нажми «Выставить».');
+    }
+  });
+  timeInput.addEventListener('compositionend', () => timeInput.dispatchEvent(new Event('input')));
   elements.timeInput.addEventListener('keydown', event => { if (event.key === 'Enter') applyTime(); });
   elements.showTime.addEventListener('change', () => { clock.state.showTime = elements.showTime.checked; elements.timeControls.hidden = !clock.state.showTime; });
   elements.showMinutes.addEventListener('change', () => { clock.state.showMinutes = elements.showMinutes.checked; drawDial(); });
