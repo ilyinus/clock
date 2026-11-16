@@ -251,15 +251,42 @@ label.setting-title {
 }
 
 .choice-row {
-  display: flex;
-  flex: 1;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.6fr;
   min-width: 0;
-  gap: 7px;
+  padding: 3px;
+  border-radius: 13px;
+  background: #f1ede4;
+  isolation: isolate;
+}
+
+/* Одна плашка перемещается под подписями; последний сегмент шире для текста. */
+.choice-row::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3.6);
+  border-radius: 10px;
+  background: #36596a;
+  transition: left .25s ease, width .25s ease;
+}
+
+.choice-row:has(input[value="roman"]:checked)::before {
+  left: calc(3px + (100% - 6px) / 3.6);
+}
+
+.choice-row:has(input[value="none"]:checked)::before {
+  left: calc(3px + (100% - 6px) / 3.6 * 2);
+  width: calc((100% - 6px) / 3.6 * 1.6);
 }
 
 .choice-row label {
   position: relative;
-  flex: 1;
+  min-width: 0;
   cursor: pointer;
 }
 
@@ -272,15 +299,15 @@ label.setting-title {
   display: block;
   padding: 9px 5px;
   border-radius: 10px;
-  background: #f1ede4;
   text-align: center;
   font-size: .82rem;
   font-weight: 700;
+  white-space: nowrap;
+  transition: color .25s ease;
 }
 
 .choice-row input:checked + span {
   color: white;
-  background: #36596a;
 }
 
 .choice-row input:focus-visible + span {
@@ -315,6 +342,8 @@ input[type=checkbox]:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .choice-row::before,
+  .choice-row span,
   input[type=checkbox] {
     transition: none;
   }
@@ -338,9 +367,6 @@ footer {
     grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
     column-gap: 8px;
     padding: 0;
-  }
-  .choice-row {
-    gap: 4px;
   }
   .choice-row span {
     padding: 9px 4px;
