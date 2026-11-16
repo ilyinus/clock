@@ -17,7 +17,7 @@
 | Что нужно доработать | Где искать в `script.js` |
 |---|---|
 | Правила времени и связи стрелок | `createClockModel()` |
-| Текст маски и положение курсора | `formatTimeEdit()` — работает без DOM |
+| Замена цифр в фиксированных позициях и положение курсора | `formatTimeEdit()` — работает без DOM; проверки в `tests/time-input.test.js` |
 | Запуск и геометрия | `startClock()`, константы в его начале |
 | Деления и подписи циферблата | `drawDial()`, `drawMarks()`, `drawHourLabels()`, `drawMinuteLabels()` |
 | Отображение и доступность управления | `render()`, `renderHands()`, `renderManualControls()`, `renderTimeInput()` |

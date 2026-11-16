@@ -127,51 +127,43 @@ function createClockModel() {
   };
 }
 
-// Маска ввода: преобразование текста и позиции курсора без обращения к DOM.
-function formatTimeEdit(value, caret, beforeEdit, inputType) {
-  let raw = value;
-
-  // Удаление двоеточия удаляет и соседнюю цифру, иначе маска вернёт разделитель
-  // на место и курсор будет «застревать» при Backspace или Delete.
-  const deletingSeparator = beforeEdit &&
-    beforeEdit.start === beforeEdit.end &&
-    raw === beforeEdit.value.replace(':', '') &&
-    beforeEdit.value.includes(':');
-
-  if (deletingSeparator) {
-    if (inputType === 'deleteContentBackward' && beforeEdit.start === 3) {
-      raw = raw.slice(0, 1) + raw.slice(2);
-      caret = 1;
-    } else if (inputType === 'deleteContentForward' && beforeEdit.start === 2) {
-      raw = raw.slice(0, 2) + raw.slice(3);
-      caret = 2;
+// Четыре фиксированных места для цифр; пустое место обозначается подчёркиванием.
+function formatTimeEdit(value, start, end, text, inputType = 'insertText') {
+  const slots = /^([0-2_][0-9_]):([0-5_][0-9_])$/.test(value) ? value.split('') : '__:__'.split('');
+  let caret = start;
+  if (inputType.startsWith('delete')) {
+    if (start !== end) {
+      for (let index = start; index < end; index++) {
+        if (index !== 2) slots[index] = '_';
+      }
+    } else {
+      let index = inputType.endsWith('Backward') ? start - 1 : start;
+      if (index === 2) index += inputType.endsWith('Backward') ? -1 : 1;
+      if (index >= 0 && index < 5) {
+        slots[index] = '_';
+        caret = index;
+      }
+    }
+  } else {
+    for (const digit of text || '') {
+      if (digit === ':') continue;
+      const index = caret === 2 ? 3 : caret;
+      if (!/^[0-9]$/.test(digit) || index >= 5) continue;
+      const maximum = index === 0 ? 2 : index === 1 && slots[0] === '2' ? 3 : index === 3 ? 5 : 9;
+      if (Number(digit) > maximum) continue;
+      slots[index] = digit;
+      // После смены десятков часов 19 → 2_ ждём допустимую вторую цифру.
+      if (index === 0 && digit === '2' && slots[1] > '3') slots[1] = '_';
+      caret = index + 1;
+      if (caret === 2) caret = 3;
     }
   }
-
-  const allDigits = raw.replace(/\D/g, '');
-  // Проверяем весь результат редактирования, включая замену и вставку.
-  // У часов первая цифра 0–2, после 2 допустимы только 0–3; у минут — 0–5.
-  const validPrefix = /^[0-2]?$|^(?:[01][0-9]|2[0-3])(?:[0-5][0-9]?)?$/.test(allDigits);
-  if ((!validPrefix || /[^0-9:]/.test(raw)) && beforeEdit) {
-    return {
-      value: beforeEdit.value,
-      start: beforeEdit.start,
-      end: beforeEdit.end,
-      rejected: true
-    };
-  }
-
-  const digits = validPrefix ? allDigits : '';
-  const formatted = digits.length < 2 ? digits : `${digits.slice(0, 2)}:${digits.slice(2)}`;
-  // Считаем цифры перед курсором: добавленное двоеточие сдвигает его на один знак.
-  const digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
-  const position = Math.min(formatted.length, digitsBeforeCaret + (digitsBeforeCaret >= 2 ? 1 : 0));
-  return { value: formatted, start: position, end: position, rejected: false };
+  return { value: slots.join(''), start: caret, end: caret };
 }
 
 // Node подключает модель без запуска браузерной части.
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { createClockModel, normalizeAngle, shortestDelta };
+  module.exports = { createClockModel, normalizeAngle, shortestDelta, formatTimeEdit };
 }
 
 function startClock() {
@@ -306,9 +298,9 @@ function startClock() {
     // Живое время отображается даже при выключенной связи. При независимом
     // положении поле очищается; при выключенной связи введённый текст сохраняется.
     if (clock.state.liveTime || clock.state.synchronized) {
-      elements.timeInput.value = clock.getDisplayedTime() || '';
+      elements.timeInput.value = clock.getDisplayedTime() || '__:__';
     } else if (clock.state.independentPosition) {
-      elements.timeInput.value = '';
+      elements.timeInput.value = '__:__';
     }
   }
 
@@ -379,28 +371,55 @@ function startClock() {
     beforeEdit = { value: input.value, start: input.selectionStart, end: input.selectionEnd };
   }
 
-  function handleTimeInput(event) {
-    const input = elements.timeInput;
-    if (input.readOnly || event.isComposing) return;
-
-    const edit = formatTimeEdit(input.value, input.selectionStart, beforeEdit, event.inputType);
-    if (input.value !== edit.value) input.value = edit.value;
-    input.setSelectionRange(edit.start, edit.end);
+  function commitTimeEdit(edit) {
+    elements.timeInput.value = edit.value;
+    elements.timeInput.setSelectionRange(edit.start, edit.end);
     beforeEdit = null;
-    if (edit.rejected) return;
-
     applyTime();
   }
 
-  function finishTimeComposition() {
-    // Во время составного ввода маска ждёт готового текста, чтобы не мешать вводу.
-    elements.timeInput.dispatchEvent(new Event('input'));
+  function handleBeforeTimeInput(event) {
+    if (elements.timeInput.readOnly) return;
+    if (!beforeEdit) rememberTimeEdit();
+    if (event.isComposing || !event.cancelable) return;
+    event.preventDefault();
+    const { value, start, end } = beforeEdit;
+    commitTimeEdit(formatTimeEdit(value, start, end, event.data, event.inputType));
+  }
+
+  function handleTimeInput(event) {
+    const input = elements.timeInput;
+    if (input.readOnly || event.isComposing) return;
+    // Некоторые мобильные браузеры не позволяют отменить beforeinput.
+    // В этом случае восстанавливаем фиксированные позиции после изменения DOM.
+    const previous = beforeEdit || { value: '__:__', start: 0, end: 5 };
+    const insertedLength = input.value.length - previous.value.length + previous.end - previous.start;
+    const text = event.data ?? input.value.slice(previous.start, previous.start + Math.max(0, insertedLength));
+    commitTimeEdit(formatTimeEdit(previous.value, previous.start, previous.end, text, event.inputType));
+  }
+
+  function startTimeEntry() {
+    if (elements.timeInput.readOnly) return;
+    elements.timeInput.setSelectionRange(0, 0);
+    beforeEdit = null;
+  }
+
+  function pasteTime(event) {
+    if (elements.timeInput.readOnly) return;
+    event.preventDefault();
+    rememberTimeEdit();
+    const { value, start, end } = beforeEdit;
+    commitTimeEdit(formatTimeEdit(value, start, end, event.clipboardData.getData('text')));
   }
 
   function bindTimeInputEvents() {
-    elements.timeInput.addEventListener('beforeinput', rememberTimeEdit);
+    elements.timeInput.addEventListener('focus', startTimeEntry);
+    elements.timeInput.addEventListener('click', startTimeEntry);
+    elements.timeInput.addEventListener('beforeinput', handleBeforeTimeInput);
     elements.timeInput.addEventListener('input', handleTimeInput);
-    elements.timeInput.addEventListener('compositionend', finishTimeComposition);
+    elements.timeInput.addEventListener('paste', pasteTime);
+    elements.timeInput.addEventListener('compositionstart', rememberTimeEdit);
+    elements.timeInput.addEventListener('compositionend', handleTimeInput);
   }
 
   // Живое время: источник истины — часы устройства, а не число срабатываний таймера.
@@ -421,7 +440,7 @@ function startClock() {
     if (clock.state.liveTime) {
       updateLiveTime();
     } else if (!clock.state.synchronized) {
-      elements.timeInput.value = '';
+      elements.timeInput.value = '__:__';
     }
     render();
   }
